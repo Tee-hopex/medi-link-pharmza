@@ -62,7 +62,7 @@ export async function createItem(userId: string, data: {
   })
 }
 
-export async function updateItem(userId: string, itemId: string, data: Partial<ReturnType<typeof createItem>>) {
+export async function updateItem(userId: string, itemId: string, data: Partial<Parameters<typeof createItem>[1]>) {
   const item = await prisma.inventoryItem.findFirst({ where: { id: itemId, userId } })
   if (!item) throw new Error('Item not found')
   return prisma.inventoryItem.update({ where: { id: itemId }, data })
