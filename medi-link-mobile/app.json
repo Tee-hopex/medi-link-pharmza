@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "Medi_LinK",
+    "slug": "medi-link",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "medi-link",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/logo-light.png",
+    "splash": {
+      "image": "./assets/logo-light.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.medilink.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Medi_LinK uses the camera to scan drug barcodes",
+        "NSLocationWhenInUseUsageDescription": "Medi_LinK uses your location to find nearby pharmacies"
+      }
+    },
+    "android": {
+      "package": "com.medilink.mobile",
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ],
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/2b7a8a20-0d61-42ac-b99d-cafa824a2cc8"
+    },
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2b7a8a20-0d61-42ac-b99d-cafa824a2cc8"
+      }
+    },
+    "owner": "osemwegieeghosa"
+  }
+}

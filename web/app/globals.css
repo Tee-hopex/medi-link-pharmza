@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --pharva-green: #1E8A6E;
+    --pharva-teal: #2990B0;
+    --pharva-bg: #F7F8F5;
+    --pharva-sidebar: #0F1A13;
+    --pharva-border: #E3E6E1;
+    --pharva-muted: #7B8A82;
+  }
+
+  * {
+    border-color: #E3E6E1;
+  }
+
+  body {
+    background-color: var(--pharva-bg);
+    @apply text-gray-900 font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display), 'Plus Jakarta Sans', system-ui, sans-serif;
+    @apply tracking-tight;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Dual-leaf brand accent — mirrors the two-color leaves in the PHARVA logo */
+  .pharva-accent-line {
+    height: 2px;
+    background: linear-gradient(to right, #1E8A6E, #2990B0);
+    border-radius: 999px;
+  }
+}

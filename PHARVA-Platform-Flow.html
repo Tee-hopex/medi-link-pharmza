@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Full platform flow and product documentation for PHARVA — pharmacy intelligence and redistribution platform." />
+  <title>PHARVA — Platform Flow & Product Documentation</title>
+  <style>
+    /* ====================================================
+       TOKENS
+    ==================================================== */
+    :root {
+      --green:  #1E8A6E;
+      --teal:   #2990B0;
+      --dark:   #0F1A13;
+      --text:   #1a1a1a;
+      --muted:  #7B8A82;
+      --border: #e3e6e1;
+      --bg:     #f9f9f7;
+      --white:  #ffffff;
+    }
+
+    /* ====================================================
+       RESET & BASE
+    ==================================================== */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.75;
+      color: var(--text);
+      background: var(--bg);
+      overflow-x: hidden;
+    }
+
+    a { color: var(--green); }
+    strong { color: var(--text); }
+
+    /* ====================================================
+       STICKY NAV
+    ==================================================== */
+    #top { position: absolute; top: 0; }
+
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: rgba(15, 26, 19, 0.97);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(30, 138, 110, 0.25);
+    }
+
+    .nav-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 52px;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 15px;
+      color: white;
+      letter-spacing: -0.5px;
+      flex-shrink: 0;
+    }
+
+    .nav-logo-mark {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--green), var(--teal));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 900;
+      color: white;
+      letter-spacing: -1px;
+    }
+
+    .nav-links {
+      display: none;
+      align-items: center;
+      gap: 20px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.55);
+      text-decoration: none;
+      transition: color 0.15s;
+      white-space: nowrap;
+    }
+
+    .nav-links a:hover { color: white; }
+
+    .nav-toggle {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.7);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .nav-toggle:hover { border-color: rgba(255,255,255,0.4); color: white; }
+
+    .mobile-menu {
+      display: none;
+      background: #0A1510;
+      border-top: 1px solid rgba(30,138,110,0.15);
+      padding: 8px 16px 16px;
+    }
+
+    .mobile-menu.open { display: block; }
+
+    .mobile-menu a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.55);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: color 0.15s;
+    }
+
+    .mobile-menu a:last-child { border-bottom: none; }
+    .mobile-menu a:hover { color: white; }
+
+    .mobile-menu a .num {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--green);
+      width: 18px;
+      flex-shrink: 0;
+    }
+
+    /* ====================================================
+       PAGE WRAPPER
+    ==================================================== */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 28px 16px 60px;
+    }
+
+    /* ====================================================
+       COVER
+    ==================================================== */
+    .cover {
+      background: linear-gradient(160deg, #0F1A13 0%, #0D2028 100%);
+      color: white;
+      padding: 36px 24px 32px;
+      border-radius: 14px;
+      margin-bottom: 36px;
+    }
+
+    .cover-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 14px;
+    }
+
+    .cover h1 {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.08;
+      margin-bottom: 14px;
+      letter-spacing: -1px;
+    }
+
+    .cover-subtitle {
+      font-size: 14px;
+      color: #8AADA0;
+      line-height: 1.65;
+      margin-bottom: 28px;
+      max-width: 500px;
+    }
+
+    .cover-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 12px;
+      color: #4A6A5A;
+    }
+
+    .cover-meta-item strong {
+      color: #8AADA0;
+      display: block;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1px;
+    }
+
+    /* ====================================================
+       DIVIDER
+    ==================================================== */
+    .divider {
+      height: 2px;
+      background: linear-gradient(to right, var(--green), var(--teal));
+      border-radius: 2px;
+      margin-bottom: 36px;
+    }
+
+    /* ====================================================
+       SECTIONS
+    ==================================================== */
+    .section { margin-bottom: 48px; scroll-margin-top: 64px; }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 6px;
+    }
+
+    h2 {
+      font-size: 21px;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 14px;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 28px;
+      margin-bottom: 10px;
+    }
+
+    h4 {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+      margin-top: 18px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    p { color: #444; margin-bottom: 12px; }
+
+    /* ====================================================
+       ROLE CARDS
+    ==================================================== */
+    .role-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .role-card {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      background: var(--white);
+    }
+
+    .role-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+
+    .role-card-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .role-chip {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: #EAFAF5;
+      color: var(--green);
+      letter-spacing: 0.5px;
+    }
+
+    /* ====================================================
+       STEPS
+    ==================================================== */
+    .steps { counter-reset: step; list-style: none; margin-bottom: 16px; }
+
+    .steps li {
+      counter-increment: step;
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: flex-start;
+    }
+
+    .steps li::before {
+      content: counter(step);
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--dark);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+
+    .steps li p { margin: 0; }
+
+    /* ====================================================
+       FLOW DIAGRAMS
+    ==================================================== */
+    .flow {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 16px;
+      margin: 14px 0 20px;
+    }
+
+    .flow-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .flow-steps { display: flex; flex-direction: column; }
+
+    .flow-step { display: flex; align-items: flex-start; gap: 12px; }
+
+    .flow-connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .flow-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+
+    .flow-line {
+      width: 2px;
+      height: 22px;
+      background: linear-gradient(to bottom, var(--green), var(--teal));
+      margin: 2px 0;
+    }
+
+    .flow-step-text { flex: 1; padding-bottom: 12px; }
+    .flow-step-text strong { display: block; font-size: 13px; color: var(--text); }
+    .flow-step-text span { font-size: 12px; color: var(--muted); }
+
+    /* ====================================================
+       CALLOUTS
+    ==================================================== */
+    .callout {
+      border-left: 3px solid var(--green);
+      background: #EAFAF5;
+      padding: 12px 14px;
+      border-radius: 0 8px 8px 0;
+      margin: 14px 0;
+    }
+
+    .callout-warn { border-left-color: #E05252; background: #FEF2F2; }
+    .callout-blue { border-left-color: var(--teal); background: #E8F5FA; }
+    .callout p { margin: 0; font-size: 13px; line-height: 1.6; }
+    .callout strong { color: var(--green); }
+    .callout-warn strong { color: #E05252; }
+    .callout-blue strong { color: var(--teal); }
+
+    /* ====================================================
+       TAGS
+    ==================================================== */
+    .tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 3px;
+      margin-right: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .tag-green { background: #EAFAF5; color: var(--green); }
+    .tag-blue  { background: #E8F5FA; color: var(--teal); }
+    .tag-red   { background: #FEF2F2; color: #E05252; }
+    .tag-amber { background: #FFFBEB; color: #B45309; }
+    .tag-gray  { background: #F3F4F6; color: #6B7280; }
+
+    /* ====================================================
+       ORDER PIPELINE
+    ==================================================== */
+    .pipeline {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin: 14px 0 20px;
+    }
+
+    .pipeline-step {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      color: #555;
+      background: var(--white);
+      white-space: nowrap;
+    }
+
+    .pipeline-step.active { background: var(--dark); color: white; border-color: var(--dark); }
+    .pipeline-arrow { color: #ccc; font-size: 12px; font-weight: bold; }
+
+    /* ====================================================
+       FEATURE LIST
+    ==================================================== */
+    ul.features { list-style: none; margin: 10px 0 16px; }
+
+    ul.features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #444;
+    }
+
+    ul.features li::before {
+      content: '✓';
+      color: var(--green);
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* ====================================================
+       TABLES — scrollable on mobile
+    ==================================================== */
+    .table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 14px 0 22px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 380px;
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--dark);
+      color: white;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: #f9f9f7; }
+
+    /* ====================================================
+       FOOTER
+    ==================================================== */
+    .doc-footer {
+      border-top: 2px solid var(--border);
+      padding-top: 28px;
+      margin-top: 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .doc-footer-brand {
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--dark);
+      letter-spacing: -0.5px;
+    }
+
+    .doc-footer-tagline {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .doc-footer-copy {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .back-to-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--green);
+      text-decoration: none;
+      padding: 8px 16px;
+      border: 1.5px solid var(--green);
+      border-radius: 20px;
+      transition: background 0.15s, color 0.15s;
+      align-self: flex-start;
+    }
+
+    .back-to-top:hover { background: var(--green); color: white; }
+
+    /* ====================================================
+       PRINT
+    ==================================================== */
+    @media print {
+      .site-nav, .back-to-top { display: none; }
+      body { background: white; font-size: 12px; }
+      .page { padding: 0; }
+      .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; border-radius: 0; }
+      .page-break { page-break-before: always; }
+      .table-wrap { border: 1px solid #ddd; }
+    }
+
+    /* ====================================================
+       TABLET  ≥ 600px
+    ==================================================== */
+    @media (min-width: 600px) {
+      .page { padding: 36px 24px 60px; }
+
+      .cover { padding: 48px 36px 40px; }
+      .cover h1 { font-size: 34px; }
+      .cover-subtitle { font-size: 15px; }
+      .cover-meta { flex-direction: row; gap: 28px; }
+
+      h2 { font-size: 23px; }
+
+      .role-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ====================================================
+       DESKTOP  ≥ 860px
+    ==================================================== */
+    @media (min-width: 860px) {
+      .nav-inner { padding: 0 28px; }
+      .nav-links { display: flex; }
+      .nav-toggle { display: none; }
+
+      .page { padding: 48px 40px 80px; }
+
+      .cover { padding: 72px 56px 60px; }
+      .cover h1 { font-size: 42px; }
+      .cover-subtitle { font-size: 16px; }
+      .cover-meta { gap: 40px; }
+
+      h2 { font-size: 26px; }
+      h3 { font-size: 17px; }
+
+      .role-grid { grid-template-columns: 1fr 1fr 1fr; }
+
+      .doc-footer {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .doc-footer-copy { text-align: right; }
+    }
+  </style>
+</head>
+<body>
+<span id="top"></span>
+
+<!-- ========== STICKY NAV ========== -->
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="#top" class="nav-logo">
+      <div class="nav-logo-mark">PH</div>
+      PHARVA
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#roles">Roles</a></li>
+      <li><a href="#onboarding">Onboarding</a></li>
+      <li><a href="#inventory">Inventory</a></li>
+      <li><a href="#marketplace">Marketplace</a></li>
+      <li><a href="#emergency">Emergency Rx</a></li>
+      <li><a href="#patients">Patients</a></li>
+      <li><a href="#wallet">Wallet</a></li>
+      <li><a href="#tech">Tech</a></li>
+    </ul>
+
+    <button class="nav-toggle" onclick="document.getElementById('mobileMenu').classList.toggle('open')">
+      ☰ Sections
+    </button>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#overview"    onclick="document.getElementById('mobileMenu').classList.remove('open')"><span class="num">01</span> Overview</a>
+    <a href="#roles"       onclick="document.getElementById('mobileMenu').classList.remove('open')"><span class="num">02</span> User Roles</a>
+    <a href="#onboarding"  onclick="document.getElementById('mobileMenu').classList.remove('open')"><span class="num">03</span> Registration & Onboarding</a>
+    <a href="#inventory"   onclick="document.getElementById('mobileMenu').classList.remove('open')"><span class="num">04</span> Inventory Management</a>
+    <a href="#marketplace" onclick="document.getElementById('mobileMenu').classList.remove('open')"><span class="num">05</span> Marketplace & Orders</a>
+    <a href="#emergency"   onclick="document.getElementById('mobileMenu').classList.remove('open')"><span class="num">06</span> Emergency Rx</a>
+    <a href="#patients"    onclick="document.getElementById('mobileMenu').classList.remove('open')"><span class="num">07</span> Patient Management</a>
+    <a href="#wallet"      onclick="document.getElementById('mobileMenu').classList.remove('open')"><span class="num">08</span> Wallet & Payments</a>
+    <a href="#network"     onclick="document.getElementById('mobileMenu').classList.remove('open')"><span class="num">09</span> Network & Messaging</a>
+    <a href="#jobs"        onclick="document.getElementById('mobileMenu').classList.remove('open')"><span class="num">10</span> MediCareer</a>
+    <a href="#analytics"   onclick="document.getElementById('mobileMenu').classList.remove('open')"><span class="num">11</span> Analytics</a>
+    <a href="#tech"        onclick="document.getElementById('mobileMenu').classList.remove('open')"><span class="num">12</span> Tech Architecture</a>
+    <a href="#glossary"    onclick="document.getElementById('mobileMenu').classList.remove('open')"><span class="num">13</span> Glossary</a>
+  </div>
+</nav>
+
+<!-- ========== PAGE ========== -->
+<div class="page">
+
+  <!-- COVER -->
+  <div class="cover">
+    <div class="cover-label">Product Documentation</div>
+    <h1>PHARVA<br />Platform Flow</h1>
+    <p class="cover-subtitle">
+      A complete walkthrough of every user role, feature, and transaction flow
+      on the PHARVA pharmacy intelligence and redistribution platform.
+    </p>
+    <div class="cover-meta">
+      <div class="cover-meta-item"><span><strong>Version</strong>1.0 — Beta</span></div>
+      <div class="cover-meta-item"><span><strong>Date</strong>June 2026</span></div>
+      <div class="cover-meta-item"><span><strong>Audience</strong>Internal / Stakeholders</span></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+
+  <!-- 01 — OVERVIEW -->
+  <div class="section" id="overview">
+    <div class="section-label">01 — Overview</div>
+    <h2>What is PHARVA?</h2>
+    <p>
+      PHARVA is a full-stack healthcare platform built for the Nigerian pharmaceutical supply chain.
+      It connects pharmacies, healthcare facilities, wholesalers, distributors, and patients on a single
+      verified network — enabling them to redistribute near-expiry medications, manage inventory
+      intelligently, trade securely, respond to emergency drug requests, and manage patient care.
+    </p>
+    <p>
+      The platform has three entry points: a <strong>mobile app</strong> (React Native / Expo) for
+      on-the-go use, a <strong>web dashboard</strong> (Next.js) for full desktop operations, and a
+      <strong>REST API + real-time Socket.io backend</strong> powering both.
+    </p>
+    <div class="callout">
+      <p><strong>Core problem PHARVA solves:</strong> Nigerian pharmacies lose an estimated ₦200B+ annually to
+      medication expiry waste. PHARVA creates a trusted marketplace for redistributing near-expiry stock
+      between verified facilities — turning waste into recovered revenue.</p>
+    </div>
+  </div>
+
+
+  <!-- 02 — ROLES -->
+  <div class="section" id="roles">
+    <div class="section-label">02 — Roles</div>
+    <h2>The Three User Types</h2>
+
+    <div class="role-grid">
+      <div class="role-card">
+        <div class="role-card-title">Medical Professional</div>
+        <div class="role-card-sub">Pharmacist · Doctor · Nurse · Lab Scientist · Pharmacy Technician</div>
+        <span class="role-chip">MEDICAL</span>
+      </div>
+      <div class="role-card">
+        <div class="role-card-title">Non-Medical / Business</div>
+        <div class="role-card-sub">Wholesaler · Distributor · Supply Chain Manager</div>
+        <span class="role-chip">NON_MEDICAL</span>
+      </div>
+      <div class="role-card">
+        <div class="role-card-title">Patient</div>
+        <div class="role-card-sub">Individual managing personal medication schedules and adherence</div>
+        <span class="role-chip">PATIENT</span>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Feature</th>
+          <th>Medical</th>
+          <th>Non-Medical</th>
+          <th>Patient</th>
+        </tr>
+        <tr>
+          <td>Inventory management</td>
+          <td><span class="tag tag-green">YES</span></td>
+          <td><span class="tag tag-green">YES</span></td>
+          <td><span class="tag tag-gray">NO</span></td>
+        </tr>
+        <tr>
+          <td>Marketplace (buy &amp; sell)</td>
+          <td><span class="tag tag-green">YES</span></td>
+          <td><span class="tag tag-green">YES</span></td>
+          <td><span class="tag tag-gray">NO</span></td>
+        </tr>
+        <tr>
+          <td>Emergency Rx requests</td>
+          <td><span class="tag tag-green">YES</span></td>
+          <td><span class="tag tag-gray">NO</span></td>
+          <td><span class="tag tag-blue">PARTIAL</span></td>
+        </tr>
+        <tr>
+          <td>Patient management</td>
+          <td><span class="tag tag-green">YES</span></td>
+          <td><span class="tag tag-gray">NO</span></td>
+          <td><span class="tag tag-gray">NO</span></td>
+        </tr>
+        <tr>
+          <td>Medication schedule</td>
+          <td><span class="tag tag-blue">MANAGES</span></td>
+          <td><span class="tag tag-gray">NO</span></td>
+          <td><span class="tag tag-green">RECEIVES</span></td>
+        </tr>
+        <tr>
+          <td>Wallet &amp; payments</td>
+          <td><span class="tag tag-green">YES</span></td>
+          <td><span class="tag tag-green">YES</span></td>
+          <td><span class="tag tag-gray">NO</span></td>
+        </tr>
+        <tr>
+          <td>Analytics dashboard</td>
+          <td><span class="tag tag-green">YES</span></td>
+          <td><span class="tag tag-green">YES</span></td>
+          <td><span class="tag tag-gray">NO</span></td>
+        </tr>
+        <tr>
+          <td>Network / Messaging</td>
+          <td><span class="tag tag-green">YES</span></td>
+          <td><span class="tag tag-green">YES</span></td>
+          <td><span class="tag tag-gray">NO</span></td>
+        </tr>
+        <tr>
+          <td>MediCareer (Jobs)</td>
+          <td><span class="tag tag-green">POST &amp; APPLY</span></td>
+          <td><span class="tag tag-green">POST &amp; APPLY</span></td>
+          <td><span class="tag tag-gray">NO</span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- 03 — ONBOARDING -->
+  <div class="section" id="onboarding">
+    <div class="section-label">03 — Onboarding</div>
+    <h2>Registration &amp; Account Setup</h2>
+
+    <h3>Step-by-Step Registration (Medical / Non-Medical)</h3>
+    <ol class="steps">
+      <li><p><strong>Personal details</strong> — Full name, email address, password (min 8 characters), and role selection (MEDICAL / NON_MEDICAL / PATIENT).</p></li>
+      <li><p><strong>Facility details</strong> — Pharmacy or business name, facility type (Community Pharmacy / Hospital Pharmacy / Pharmacy Chain / Healthcare Facility / Distributor / Wholesaler), physical address, city, and state.</p></li>
+      <li><p><strong>License / registration</strong> — PCN license number or professional registration number. Optional at signup — can be added later in Settings. Without it, the account remains at BASIC verification level.</p></li>
+      <li><p><strong>Account created</strong> — A Wallet is automatically created with ₦0 balance. The user receives JWT access and refresh tokens and is logged in immediately.</p></li>
+    </ol>
+
+    <h3>Verification Levels</h3>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Level</th>
+          <th>Status</th>
+          <th>What it unlocks</th>
+        </tr>
+        <tr>
+          <td><span class="tag tag-gray">BASIC</span></td>
+          <td>No license submitted</td>
+          <td>Browse marketplace, limited trading</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-amber">PENDING</span></td>
+          <td>License submitted, awaiting review</td>
+          <td>Full platform access (trading, Emergency Rx)</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-green">VERIFIED</span></td>
+          <td>License approved by PHARVA team</td>
+          <td>Full access + trust badge on listings</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="callout callout-blue">
+      <p><strong>Patient registration</strong> is simpler — no facility details or license number required. Patients are typically linked to a pharmacy by their pharmacist who manages their care profile on the platform.</p>
+    </div>
+  </div>
+
+
+  <!-- 04 — INVENTORY -->
+  <div class="section" id="inventory">
+    <div class="section-label">04 — Feature Flow</div>
+    <h2>Inventory Management</h2>
+    <p>Every pharmacy's core activity. This is where drugs are logged, tracked, and monitored for expiry.</p>
+
+    <h3>Adding a Drug to Inventory</h3>
+    <ol class="steps">
+      <li><p><strong>Drug details</strong> — Generic name, brand name, dosage form (tablet / syrup / injection / capsule / cream), strength, manufacturer.</p></li>
+      <li><p><strong>Stock details</strong> — Quantity in stock, unit (tablets / bottles / vials), batch number, cost price per unit, selling price per unit.</p></li>
+      <li><p><strong>Expiry date</strong> — The most critical field. PHARVA uses this to monitor and trigger all expiry-related alerts.</p></li>
+      <li><p><strong>Storage conditions</strong> — Refrigerated, room temperature, controlled substance flag.</p></li>
+      <li><p><strong>Saved</strong> — Item appears in inventory dashboard with real-time status indicators.</p></li>
+    </ol>
+
+    <h3>The Expiry Alert System (Automated)</h3>
+
+    <div class="flow">
+      <div class="flow-title">Automated Expiry Monitoring Flow</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+          <div class="flow-step-text"><strong>Drug added to inventory</strong><span>Expiry date stored. Monitoring begins immediately.</span></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+          <div class="flow-step-text"><strong>Cron job runs every day at midnight</strong><span>The PHARVA server checks all inventory items for upcoming expiry.</span></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+          <div class="flow-step-text"><strong>90-day alert triggered</strong><span>Notification created: "Paracetamol 500mg (Batch PH-2024) expires in 90 days — consider listing on Marketplace."</span></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+          <div class="flow-step-text"><strong>60-day alert triggered</strong><span>Urgency escalates. Notification suggests immediate listing.</span></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+          <div class="flow-step-text"><strong>30-day critical alert</strong><span>Marked CRITICAL on dashboard. Last window for redistribution.</span></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-connector"><div class="flow-dot"></div></div>
+          <div class="flow-step-text"><strong>Pharmacist acts</strong><span>Lists item on marketplace, discounts price to attract buyers, or contacts their network directly.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Dead Stock Detection</h3>
+    <p>
+      Items that have been in inventory without movement for an extended period are automatically flagged as
+      <span class="tag tag-amber">DEAD STOCK</span>. These appear in a dedicated dashboard section with a
+      prompt to list them on the marketplace or investigate demand.
+    </p>
+
+    <h4>Inventory Status Labels</h4>
+    <ul class="features">
+      <li><span class="tag tag-green">IN STOCK</span> — Sufficient quantity, healthy expiry window</li>
+      <li><span class="tag tag-blue">EXPIRING SOON</span> — Within 90 days</li>
+      <li><span class="tag tag-red">CRITICAL</span> — Within 30 days</li>
+      <li><span class="tag tag-amber">DEAD STOCK</span> — No movement detected</li>
+      <li><span class="tag tag-gray">OUT OF STOCK</span> — Quantity at zero</li>
+    </ul>
+  </div>
+
+
+  <!-- 05 — MARKETPLACE -->
+  <div class="section" id="marketplace">
+    <div class="section-label">05 — Feature Flow</div>
+    <h2>Marketplace — Buying &amp; Selling</h2>
+    <p>
+      The marketplace is the heart of PHARVA's redistribution mission. Pharmacies list surplus or
+      near-expiry stock; other verified facilities purchase it at a discounted price before it becomes waste.
+    </p>
+
+    <h3>Creating a Listing (Seller Flow)</h3>
+    <ol class="steps">
+      <li><p><strong>Select inventory item</strong> — Choose from existing inventory or create a new entry.</p></li>
+      <li><p><strong>Set listing details</strong> — Listing price (typically below cost to move quickly), minimum order quantity, description, and condition notes.</p></li>
+      <li><p><strong>Set visibility</strong> — Public (all verified users) or restricted to specific facilities / network.</p></li>
+      <li><p><strong>Publish</strong> — Listing goes live. Status: <span class="tag tag-green">ACTIVE</span>. Appears in search results for nearby facilities.</p></li>
+      <li><p><strong>Receive orders</strong> — Buyers place orders. Seller gets a real-time notification.</p></li>
+    </ol>
+
+    <h3>Placing an Order (Buyer Flow)</h3>
+    <ol class="steps">
+      <li><p><strong>Browse / search</strong> — Filter by drug name, dosage form, location, expiry date range, price. Verified sellers are highlighted.</p></li>
+      <li><p><strong>View listing</strong> — Full details: drug info, batch number, expiry date, seller name and verification status, price, quantity available.</p></li>
+      <li><p><strong>Place order</strong> — Select quantity, confirm. Order is created and buyer's wallet is immediately debited.</p></li>
+      <li><p><strong>Funds go into escrow</strong> — Money is NOT sent to seller yet. It is held securely in escrow pending delivery.</p></li>
+      <li><p><strong>Track order</strong> — Real-time status updates as the seller processes and ships.</p></li>
+    </ol>
+
+    <h3>Order Status Pipeline</h3>
+    <div class="pipeline">
+      <div class="pipeline-step active">PENDING</div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">CONFIRMED</div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">IN TRANSIT</div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">DELIVERED</div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">COMPLETED</div>
+    </div>
+
+    <h3>Escrow &amp; Money Flow</h3>
+
+    <div class="flow">
+      <div class="flow-title">Transaction Escrow Flow</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+          <div class="flow-step-text"><strong>Buyer places order</strong><span>Example: Buyer orders ₦50,000 worth of Amoxicillin 500mg.</span></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+          <div class="flow-step-text"><strong>Buyer wallet debited: –₦50,000</strong><span>Funds move from Buyer's wallet balance into Buyer's escrow balance. Seller receives nothing yet.</span></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+          <div class="flow-step-text"><strong>Seller confirms &amp; ships</strong><span>Seller marks order as CONFIRMED then IN_TRANSIT. Buyer is notified at each step.</span></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+          <div class="flow-step-text"><strong>Buyer receives &amp; confirms delivery</strong><span>Buyer marks order DELIVERED then COMPLETED on the platform.</span></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-connector"><div class="flow-dot"></div></div>
+          <div class="flow-step-text"><strong>Escrow released → Seller wallet credited: +₦50,000</strong><span>Only now does the seller receive payment. Buyer's escrow balance goes to zero.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <p><strong>Cancellation protection:</strong> If an order is cancelled while still in PENDING status (before seller confirms), the full ₦50,000 is refunded from escrow back to the buyer's wallet balance. No loss to either party.</p>
+    </div>
+  </div>
+
+
+  <!-- 06 — EMERGENCY RX -->
+  <div class="section" id="emergency">
+    <div class="section-label">06 — Feature Flow</div>
+    <h2>Emergency Rx — Urgent Drug Requests</h2>
+    <p>
+      When a patient urgently needs a medication that a pharmacy does not have in stock, the pharmacist
+      can broadcast an Emergency Rx request to all nearby verified pharmacies on the PHARVA network.
+      This is a real-time, location-aware alert system.
+    </p>
+
+    <h3>Sending an Emergency Rx Request (Requesting Pharmacy)</h3>
+    <ol class="steps">
+      <li><p><strong>Open Emergency Rx</strong> — Tap the <span class="tag tag-red">LIVE</span> EmergencyRx feature in the navigation.</p></li>
+      <li><p><strong>Enter drug details</strong> — Drug name, dosage form, strength, quantity needed, patient age group, urgency level.</p></li>
+      <li><p><strong>Add patient context</strong> — Brief clinical note (optional but helpful) — e.g., "Post-surgical patient, needs IV Cefuroxime 750mg."</p></li>
+      <li><p><strong>Broadcast</strong> — Request is sent in real-time via Socket.io to all verified pharmacies within the configured radius.</p></li>
+      <li><p><strong>Receive responses</strong> — Pharmacies that have the drug respond with their availability and price. The requesting pharmacist sees all responses in real time.</p></li>
+      <li><p><strong>Coordinate</strong> — Arrange for patient to go to the responding pharmacy, or arrange transfer of drugs.</p></li>
+    </ol>
+
+    <h3>Responding to an Emergency Rx (Responding Pharmacy)</h3>
+    <ol class="steps">
+      <li><p><strong>Receive real-time alert</strong> — A push notification and in-app alert appears: "URGENT: Cefuroxime 750mg IV needed nearby."</p></li>
+      <li><p><strong>Check stock</strong> — Quickly verify availability in their own inventory.</p></li>
+      <li><p><strong>Respond</strong> — Confirm availability, state quantity and price. Response is sent immediately to the requesting pharmacy.</p></li>
+      <li><p><strong>Serve patient</strong> — Patient is directed to them, or the drug is transferred. Transaction can proceed through the marketplace if needed for payment tracking.</p></li>
+    </ol>
+
+    <div class="callout">
+      <p><strong>Why this matters:</strong> In Nigerian hospitals, patients frequently cannot get drugs from the hospital pharmacy and must send family members to multiple community pharmacies. Emergency Rx eliminates this by creating a 60-second broadcast that reaches dozens of pharmacies simultaneously.</p>
+    </div>
+  </div>
+
+
+  <!-- 07 — PATIENTS -->
+  <div class="section" id="patients">
+    <div class="section-label">07 — Feature Flow</div>
+    <h2>Patient Management &amp; Medication Adherence</h2>
+    <p>
+      Medical professionals can register and manage their patients on PHARVA, set up medication
+      schedules, and track how well patients are adhering to their treatment plans.
+    </p>
+
+    <h3>Registering a Patient (Pharmacist's View)</h3>
+    <ol class="steps">
+      <li><p><strong>Add new patient</strong> — Name, date of birth, gender, phone number, email (optional), blood group, genotype, known allergies.</p></li>
+      <li><p><strong>Medical history</strong> — Chronic conditions, current medications, past surgeries — for context when handling their prescriptions.</p></li>
+      <li><p><strong>Patient is linked</strong> — The patient is now associated with this pharmacy/facility. The pharmacist can manage all their care from here.</p></li>
+    </ol>
+
+    <h3>Setting Up a Medication Schedule</h3>
+    <ol class="steps">
+      <li><p><strong>Select patient</strong> — Open the patient's profile from the Patients list.</p></li>
+      <li><p><strong>Create schedule</strong> — Drug name, dosage (e.g., "500mg"), frequency (e.g., twice daily), route (oral / injection / topical), start date, end date, special instructions (e.g., "take with food").</p></li>
+      <li><p><strong>Schedule is live</strong> — The patient sees their medication schedule in their PHARVA app. They receive reminders at the configured times.</p></li>
+    </ol>
+
+    <h3>Adherence Tracking</h3>
+    <p>For each scheduled dose, the patient logs one of three statuses:</p>
+    <ul class="features">
+      <li><span class="tag tag-green">TAKEN</span> — Dose was taken on time</li>
+      <li><span class="tag tag-red">MISSED</span> — Dose was not taken</li>
+      <li><span class="tag tag-amber">SKIPPED</span> — Intentionally skipped (e.g., side effects)</li>
+    </ul>
+    <p>
+      The pharmacist can view the patient's adherence history and follow up on persistent missed doses.
+      This is especially valuable for chronic disease management (hypertension, diabetes, TB, HIV).
+    </p>
+  </div>
+
+
+  <!-- 08 — WALLET -->
+  <div class="section" id="wallet">
+    <div class="section-label">08 — Feature Flow</div>
+    <h2>Wallet &amp; Payments</h2>
+    <p>
+      Every MEDICAL and NON_MEDICAL account has a PHARVA Wallet — a stored-value account
+      that powers all transactions on the platform. Payments are handled via <strong>Paystack</strong>,
+      Nigeria's leading payment gateway.
+    </p>
+
+    <h3>Wallet Structure</h3>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Component</th>
+          <th>What it holds</th>
+        </tr>
+        <tr>
+          <td><strong>Balance</strong></td>
+          <td>Funds available for spending on the marketplace or withdrawal to your bank account</td>
+        </tr>
+        <tr>
+          <td><strong>Escrow</strong></td>
+          <td>Funds locked in active orders. Cannot be spent or withdrawn until order is completed or cancelled</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>Funding Your Wallet</h3>
+    <ol class="steps">
+      <li><p>Navigate to <strong>Wallet</strong> and tap "Fund Wallet."</p></li>
+      <li><p>Enter the amount to add.</p></li>
+      <li><p>Complete payment via Paystack (card, bank transfer, USSD).</p></li>
+      <li><p>Wallet balance updated immediately on successful payment confirmation from Paystack webhook.</p></li>
+    </ol>
+
+    <h3>Withdrawing from Wallet</h3>
+    <ol class="steps">
+      <li><p>Navigate to <strong>Wallet</strong> and tap "Withdraw."</p></li>
+      <li><p>Enter bank account details (one-time setup) and amount.</p></li>
+      <li><p>Payout initiated via Paystack Transfers API.</p></li>
+      <li><p>Funds credited to bank account within minutes (instant transfer) or up to 24 hours.</p></li>
+    </ol>
+
+    <div class="callout callout-warn">
+      <p><strong>Note:</strong> Funds held in Escrow cannot be withdrawn. You must wait for the associated order to reach COMPLETED (escrow released to seller) or CANCELLED (refunded to buyer) status first.</p>
+    </div>
+
+    <h3>Transaction Types</h3>
+    <ul class="features">
+      <li><strong>CREDIT</strong> — Wallet top-up via Paystack, sale proceeds released from escrow</li>
+      <li><strong>DEBIT</strong> — Purchase on marketplace, withdrawal to bank</li>
+      <li><strong>ESCROW_HOLD</strong> — Funds locked when buyer places an order</li>
+      <li><strong>ESCROW_RELEASE</strong> — Funds released to seller on order completion</li>
+      <li><strong>REFUND</strong> — Escrow returned to buyer on order cancellation</li>
+    </ul>
+  </div>
+
+
+  <!-- 09 — NETWORK -->
+  <div class="section" id="network">
+    <div class="section-label">09 — Feature Flow</div>
+    <h2>Network — Messaging &amp; Channels</h2>
+    <p>
+      The Network module is a professional communication layer built for the pharmacy community.
+      Think of it as WhatsApp groups and direct messages, but within a verified, professional healthcare context.
+    </p>
+
+    <h3>Channel Types</h3>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Type</th>
+          <th>Use Case</th>
+          <th>Example</th>
+        </tr>
+        <tr>
+          <td><strong>DIRECT</strong></td>
+          <td>One-on-one messaging between two verified users</td>
+          <td>A pharmacist messaging a wholesaler about a bulk order</td>
+        </tr>
+        <tr>
+          <td><strong>GROUP</strong></td>
+          <td>Multi-member channel for communities and associations</td>
+          <td>Lagos Island Pharmacists Association, PCN Zone 3 Group</td>
+        </tr>
+        <tr>
+          <td><strong>ANNOUNCEMENT</strong></td>
+          <td>Broadcast-only channel where only admins can post</td>
+          <td>PHARVA official announcements, drug recall alerts</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>Message Types Supported</h3>
+    <ul class="features">
+      <li><strong>TEXT</strong> — Standard message</li>
+      <li><strong>IMAGE</strong> — Drug photos, prescription images (via Cloudinary)</li>
+      <li><strong>FILE</strong> — Lab results, invoices, regulatory documents</li>
+      <li><strong>SYSTEM</strong> — Automated messages (e.g., "Ada joined the channel")</li>
+    </ul>
+  </div>
+
+
+  <!-- 10 — JOBS -->
+  <div class="section" id="jobs">
+    <div class="section-label">10 — Feature Flow</div>
+    <h2>MediCareer — Pharmacy Job Board</h2>
+    <p>
+      A professional job board built into PHARVA specifically for the pharmaceutical sector.
+      Facilities can post roles and professionals can apply — all within the verified network.
+    </p>
+
+    <h3>Posting a Job (Facility)</h3>
+    <ol class="steps">
+      <li><p><strong>Job details</strong> — Title, description, requirements, responsibilities, location, salary range (optional).</p></li>
+      <li><p><strong>Job type</strong> — <span class="tag tag-green">FULL_TIME</span> <span class="tag tag-blue">PART_TIME</span> <span class="tag tag-amber">LOCUM</span> <span class="tag tag-gray">INTERNSHIP</span> <span class="tag tag-gray">CONTRACT</span>.</p></li>
+      <li><p><strong>Application deadline</strong> — After this date, no new applications are accepted and the listing is automatically closed.</p></li>
+      <li><p><strong>Published</strong> — Visible to all verified professionals on the platform.</p></li>
+    </ol>
+
+    <h3>Applying for a Job (Professional)</h3>
+    <ol class="steps">
+      <li><p>Browse the job board, filter by type, location, or specialty.</p></li>
+      <li><p>View full job details including the posting facility's name and verification status.</p></li>
+      <li><p>Submit application — includes a cover message and links to their PHARVA profile (which shows their verification level, facility, and professional details).</p></li>
+      <li><p>Facility receives notification and reviews applicants through the platform.</p></li>
+    </ol>
+  </div>
+
+
+  <!-- 11 — ANALYTICS -->
+  <div class="section" id="analytics">
+    <div class="section-label">11 — Feature Flow</div>
+    <h2>Analytics Dashboard</h2>
+    <p>
+      Every MEDICAL and NON_MEDICAL user has access to a business intelligence dashboard showing
+      key metrics about their inventory, trading activity, and financial performance.
+    </p>
+
+    <h3>Available Reports</h3>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Report</th>
+          <th>What it shows</th>
+        </tr>
+        <tr>
+          <td><strong>Profit Summary</strong></td>
+          <td>Total revenue from sales, total cost of goods sold, net profit margin, comparison to previous period</td>
+        </tr>
+        <tr>
+          <td><strong>Expiry Timeline</strong></td>
+          <td>Bar chart showing how many items expire each month over the next 6 months — helps plan redistribution timing</td>
+        </tr>
+        <tr>
+          <td><strong>Dead Stock Analysis</strong></td>
+          <td>List of slow-moving inventory items, estimated loss if not redistributed, suggested actions</td>
+        </tr>
+        <tr>
+          <td><strong>Order Performance</strong></td>
+          <td>Order completion rate, average fulfilment time, cancellation rate, top buyers/sellers</td>
+        </tr>
+        <tr>
+          <td><strong>Wallet Summary</strong></td>
+          <td>Total earned, total spent, escrow held, withdrawal history</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- 12 — TECH -->
+  <div class="section" id="tech">
+    <div class="section-label">12 — Technical Reference</div>
+    <h2>Platform Architecture Summary</h2>
+
+    <h3>Applications</h3>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>App</th>
+          <th>Technology</th>
+          <th>Purpose</th>
+        </tr>
+        <tr>
+          <td><strong>Mobile App</strong></td>
+          <td>React Native 0.81 + Expo SDK 54</td>
+          <td>iOS &amp; Android app for on-the-go pharmacy management</td>
+        </tr>
+        <tr>
+          <td><strong>Web Dashboard</strong></td>
+          <td>Next.js 15 (App Router) + Tailwind CSS</td>
+          <td>Full-featured desktop dashboard for pharmacies</td>
+        </tr>
+        <tr>
+          <td><strong>Backend API</strong></td>
+          <td>Node.js + Express + TypeScript + Prisma</td>
+          <td>REST API powering both apps, real-time via Socket.io</td>
+        </tr>
+        <tr>
+          <td><strong>Database</strong></td>
+          <td>PostgreSQL on Supabase</td>
+          <td>Primary data store — users, inventory, orders, wallets</td>
+        </tr>
+        <tr>
+          <td><strong>File Storage</strong></td>
+          <td>Cloudinary</td>
+          <td>Drug images, user avatars, document uploads</td>
+        </tr>
+        <tr>
+          <td><strong>Payments</strong></td>
+          <td>Paystack</td>
+          <td>Wallet funding, payouts, transaction verification</td>
+        </tr>
+        <tr>
+          <td><strong>Real-time</strong></td>
+          <td>Socket.io</td>
+          <td>Emergency Rx broadcasts, live order updates, chat</td>
+        </tr>
+        <tr>
+          <td><strong>Auth</strong></td>
+          <td>JWT (15 min access + 7 day refresh token)</td>
+          <td>Stateless authentication with secure token rotation</td>
+        </tr>
+      </table>
+    </div>
+
+    <h3>API Endpoints Summary</h3>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Module</th>
+          <th>Base Path</th>
+          <th>Key Operations</th>
+        </tr>
+        <tr><td>Auth</td><td>/api/v1/auth</td><td>register, login, logout, refresh token</td></tr>
+        <tr><td>Users</td><td>/api/v1/users</td><td>profile, update, avatar upload</td></tr>
+        <tr><td>Inventory</td><td>/api/v1/inventory</td><td>CRUD, expiry alerts, dead stock detection</td></tr>
+        <tr><td>Marketplace</td><td>/api/v1/marketplace</td><td>listings CRUD, search &amp; filter</td></tr>
+        <tr><td>Orders</td><td>/api/v1/orders</td><td>create, status updates, escrow management</td></tr>
+        <tr><td>Emergency Rx</td><td>/api/v1/emergency-rx</td><td>broadcast request, respond, close request</td></tr>
+        <tr><td>Patients</td><td>/api/v1/patients</td><td>register, medication schedules, adherence logs</td></tr>
+        <tr><td>Wallet</td><td>/api/v1/wallet</td><td>balance, fund, withdraw, transaction history</td></tr>
+        <tr><td>Network</td><td>/api/v1/network</td><td>channels, members, messages</td></tr>
+        <tr><td>Jobs</td><td>/api/v1/jobs</td><td>post, browse, apply, manage applications</td></tr>
+        <tr><td>Analytics</td><td>/api/v1/analytics</td><td>dashboard stats, profit, expiry timeline</td></tr>
+      </table>
+    </div>
+
+    <h3>Security Model</h3>
+    <ul class="features">
+      <li>All passwords hashed with <strong>bcrypt</strong> (10 salt rounds) — never stored in plain text</li>
+      <li>JWT access tokens expire in <strong>15 minutes</strong>; refresh tokens in <strong>7 days</strong></li>
+      <li>Refresh tokens are stored in the database and rotated on every use (old token invalidated)</li>
+      <li>Logout invalidates the refresh token in the database immediately</li>
+      <li>All inputs validated with <strong>Zod</strong> schemas before hitting the database</li>
+      <li>File uploads are processed and hosted via <strong>Cloudinary</strong> — no raw file storage on the server</li>
+      <li>Paystack webhooks verified with signature to prevent fraudulent payment confirmations</li>
+    </ul>
+  </div>
+
+
+  <!-- 13 — GLOSSARY -->
+  <div class="section" id="glossary">
+    <div class="section-label">13 — Reference</div>
+    <h2>Glossary</h2>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Term</th>
+          <th>Definition</th>
+        </tr>
+        <tr><td><strong>Escrow</strong></td><td>Funds held in a neutral holding state during an active order, released to the seller only after confirmed delivery</td></tr>
+        <tr><td><strong>Dead Stock</strong></td><td>Inventory items that have not had any sales movement for an extended period, representing idle capital</td></tr>
+        <tr><td><strong>Near-expiry</strong></td><td>Medications within 90 days of their expiration date</td></tr>
+        <tr><td><strong>Emergency Rx</strong></td><td>A real-time broadcast request sent to nearby pharmacies when a patient urgently needs a drug not in stock</td></tr>
+        <tr><td><strong>Verification Level</strong></td><td>A trust tier assigned to each account: BASIC → PENDING → VERIFIED, based on license submission and review</td></tr>
+        <tr><td><strong>PCN</strong></td><td>Pharmacists Council of Nigeria — the regulatory body whose license number is required for VERIFIED status</td></tr>
+        <tr><td><strong>Adherence</strong></td><td>Whether a patient is taking their medications as prescribed — tracked per dose as TAKEN, MISSED, or SKIPPED</td></tr>
+        <tr><td><strong>Listing</strong></td><td>A marketplace entry created by a seller offering a specific drug at a specific price</td></tr>
+        <tr><td><strong>Channel</strong></td><td>A messaging group or direct conversation in the Network module</td></tr>
+        <tr><td><strong>Locum</strong></td><td>A temporary pharmacist covering for another — a common job type in Nigerian pharmacy</td></tr>
+        <tr><td><strong>Wallet Balance</strong></td><td>Available funds — can be spent on marketplace or withdrawn to bank</td></tr>
+        <tr><td><strong>Wallet Escrow</strong></td><td>Locked funds tied to an active order — cannot be spent or withdrawn</td></tr>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- FOOTER -->
+  <div class="doc-footer">
+    <div>
+      <div class="doc-footer-brand">PHARVA</div>
+      <div class="doc-footer-tagline">Pharmacy Intelligence &amp; Redistribution Platform</div>
+      <a href="#top" class="back-to-top">↑ Back to top</a>
+    </div>
+    <div class="doc-footer-copy">
+      © 2026 PHARVA. Confidential.<br />
+      Document version 1.0 — June 2026
+    </div>
+  </div>
+
+</div><!-- /page -->
+</body>
+</html>

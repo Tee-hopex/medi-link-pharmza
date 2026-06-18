@@ -1,0 +1,482 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ──────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  MEDICAL
+  NON_MEDICAL
+  PATIENT
+}
+
+enum VerificationLevel {
+  UNVERIFIED
+  PENDING
+  LEVEL_1
+  LEVEL_2
+  LEVEL_3
+}
+
+enum FacilityType {
+  COMMUNITY_PHARMACY
+  HOSPITAL_PHARMACY
+  PHARMACY_CHAIN
+  HEALTHCARE_FACILITY
+  DISTRIBUTOR
+  WHOLESALER
+}
+
+enum ListingStatus {
+  ACTIVE
+  RESERVED
+  SOLD
+  EXPIRED
+  CANCELLED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  IN_TRANSIT
+  DELIVERED
+  COMPLETED
+  DISPUTED
+  CANCELLED
+}
+
+enum ChannelType {
+  PUBLIC
+  PROFESSIONAL
+  PRIVATE
+  ANNOUNCEMENT
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
+}
+
+enum AdherenceStatus {
+  ON_TRACK
+  MISSED
+  CRITICAL
+}
+
+enum DoseStatus {
+  TAKEN
+  MISSED
+  SKIPPED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+  ESCROW
+  RELEASE
+  REFUND
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REVERSED
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  LOCUM
+  CONTRACT
+}
+
+enum NotificationType {
+  EXPIRY_ALERT
+  ORDER_UPDATE
+  EMERGENCY_RX
+  MESSAGE
+  SYSTEM
+}
+
+enum EmergencyStatus {
+  ACTIVE
+  FULFILLED
+  EXPIRED
+  CANCELLED
+}
+
+// ─── Models ─────────────────────────────────────────────────────────────────
+
+model User {
+  id                String            @id @default(cuid())
+  email             String            @unique
+  phone             String?           @unique
+  passwordHash      String
+  firstName         String
+  lastName          String
+  role              UserRole
+  profession        String?
+  specialty         String?
+  verificationLevel VerificationLevel @default(UNVERIFIED)
+  avatar            String?
+  isActive          Boolean           @default(true)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  facility          Facility?
+  inventory         InventoryItem[]
+  listings          MarketplaceListing[]
+  buyerOrders       Order[]            @relation("BuyerOrders")
+  sellerOrders      Order[]            @relation("SellerOrders")
+  channelMemberships ChannelMember[]
+  messages          Message[]
+  patients          Patient[]
+  wallet            Wallet?
+  jobPostings       Job[]
+  jobApplications   JobApplication[]
+  notifications     Notification[]
+  refreshTokens     RefreshToken[]
+  emergencyRequests EmergencyRxRequest[]
+
+  @@map("users")
+}
+
+model Facility {
+  id            String       @id @default(cuid())
+  userId        String       @unique
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  type          FacilityType
+  address       String
+  city          String
+  state         String
+  latitude      Float?
+  longitude     Float?
+  licenseNumber String?
+  licenseDoc    String?
+  verified      Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("facilities")
+}
+
+model InventoryItem {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  genericName     String?
+  batchNumber     String?
+  manufacturer    String?
+  category        String?
+  unit            String
+  quantity        Int
+  costPrice       Float
+  sellingPrice    Float
+  expiryDate      DateTime
+  manufactureDate DateTime?
+  barcode         String?
+  location        String?
+  notes           String?
+  isDeadStock     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  listings MarketplaceListing[]
+
+  @@map("inventory_items")
+}
+
+model MarketplaceListing {
+  id              String        @id @default(cuid())
+  sellerId        String
+  seller          User          @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  inventoryItemId String?
+  inventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id])
+  drugName        String
+  genericName     String?
+  category        String?
+  quantity        Int
+  unit            String
+  askingPrice     Float
+  originalPrice   Float?
+  expiryDate      DateTime
+  description     String?
+  images          String[]
+  status          ListingStatus @default(ACTIVE)
+  isUrgent        Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  orders Order[]
+
+  @@map("marketplace_listings")
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  buyerId         String
+  buyer           User        @relation("BuyerOrders", fields: [buyerId], references: [id])
+  sellerId        String
+  seller          User        @relation("SellerOrders", fields: [sellerId], references: [id])
+  listingId       String
+  listing         MarketplaceListing @relation(fields: [listingId], references: [id])
+  drugName        String
+  quantity        Int
+  unit            String
+  unitPrice       Float
+  totalPrice      Float
+  escrowAmount    Float       @default(0)
+  status          OrderStatus @default(PENDING)
+  deliveryAddress String?
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  timeline OrderEvent[]
+
+  @@map("orders")
+}
+
+model OrderEvent {
+  id          String      @id @default(cuid())
+  orderId     String
+  order       Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status      OrderStatus
+  description String
+  actor       String?
+  createdAt   DateTime    @default(now())
+
+  @@map("order_events")
+}
+
+model Channel {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  type        ChannelType
+  icon        String?
+  isPrivate   Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  members  ChannelMember[]
+  messages Message[]
+
+  @@map("channels")
+}
+
+model ChannelMember {
+  id        String   @id @default(cuid())
+  channelId String
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt  DateTime @default(now())
+
+  @@unique([channelId, userId])
+  @@map("channel_members")
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  channelId String
+  channel   Channel     @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User        @relation(fields: [senderId], references: [id])
+  content   String
+  type      MessageType @default(TEXT)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("messages")
+}
+
+model Patient {
+  id           String   @id @default(cuid())
+  pharmacistId String
+  pharmacist   User     @relation(fields: [pharmacistId], references: [id], onDelete: Cascade)
+  name         String
+  phone        String?
+  dateOfBirth  DateTime?
+  condition    String?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  medications MedicationSchedule[]
+
+  @@map("patients")
+}
+
+model MedicationSchedule {
+  id        String          @id @default(cuid())
+  patientId String
+  patient   Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  drugName  String
+  dosage    String
+  frequency String
+  startDate DateTime
+  endDate   DateTime?
+  times     String[]
+  adherence AdherenceStatus @default(ON_TRACK)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  logs AdherenceLog[]
+
+  @@map("medication_schedules")
+}
+
+model AdherenceLog {
+  id                   String             @id @default(cuid())
+  medicationScheduleId String
+  medicationSchedule   MedicationSchedule @relation(fields: [medicationScheduleId], references: [id], onDelete: Cascade)
+  doseTime             DateTime
+  status               DoseStatus
+  notes                String?
+  loggedAt             DateTime           @default(now())
+
+  @@map("adherence_logs")
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance   Float    @default(0)
+  escrow    Float    @default(0)
+  currency  String   @default("NGN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions WalletTransaction[]
+
+  @@map("wallets")
+}
+
+model WalletTransaction {
+  id          String            @id @default(cuid())
+  walletId    String
+  wallet      Wallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  type        TransactionType
+  amount      Float
+  description String
+  reference   String?           @unique
+  status      TransactionStatus @default(COMPLETED)
+  metadata    Json?
+  createdAt   DateTime          @default(now())
+
+  @@map("wallet_transactions")
+}
+
+model Job {
+  id           String  @id @default(cuid())
+  posterId     String
+  poster       User    @relation(fields: [posterId], references: [id], onDelete: Cascade)
+  title        String
+  facility     String
+  location     String
+  type         JobType
+  salary       String?
+  description  String?
+  requirements String?
+  isUrgent     Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  applications JobApplication[]
+
+  @@map("jobs")
+}
+
+model JobApplication {
+  id           String            @id @default(cuid())
+  jobId        String
+  job          Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  applicantId  String
+  applicant    User              @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  coverMessage String?
+  status       ApplicationStatus @default(PENDING)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@unique([jobId, applicantId])
+  @@map("job_applications")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  data      Json?
+  createdAt DateTime         @default(now())
+
+  @@map("notifications")
+}
+
+model EmergencyRxRequest {
+  id          String          @id @default(cuid())
+  requesterId String
+  requester   User            @relation(fields: [requesterId], references: [id])
+  drugName    String
+  quantity    Int
+  unit        String
+  urgency     String
+  latitude    Float
+  longitude   Float
+  radius      Float           @default(10)
+  status      EmergencyStatus @default(ACTIVE)
+  expiresAt   DateTime
+  createdAt   DateTime        @default(now())
+
+  responses EmergencyRxResponse[]
+
+  @@map("emergency_rx_requests")
+}
+
+model EmergencyRxResponse {
+  id           String             @id @default(cuid())
+  requestId    String
+  request      EmergencyRxRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  responderId  String
+  pharmacyName String
+  quantity     Int
+  price        Float?
+  eta          String?
+  createdAt    DateTime           @default(now())
+
+  @@map("emergency_rx_responses")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
