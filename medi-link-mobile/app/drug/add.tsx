@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Animated, KeyboardAvoidingView, Platform,
+  Animated, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTheme } from '../../constants/theme'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
+import { api } from '../../lib/api'
 
 const CATEGORIES = [
   'Antibiotic', 'Antidiabetic', 'Analgesic', 'Antacid', 'NSAID',
@@ -140,6 +141,8 @@ export default function AddDrugScreen() {
   const [category, setCategory] = useState('')
   const [batch, setBatch]       = useState('')
   const [qty, setQty]           = useState('')
+  const [unit, setUnit]         = useState('')
+  const [costPrice, setCostPrice]   = useState('')
   const [price, setPrice]       = useState('')
   const [reorder, setReorder]   = useState('')
   const [expiry, setExpiry]     = useState('')
@@ -165,13 +168,41 @@ export default function AddDrugScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!name.trim() || !unit.trim() || !qty || !price || !expiry) {
+      Alert.alert('Missing fields', 'Drug name, unit, quantity, selling price, and expiry date are required.')
+      return
+    }
+    const [mm, yyyy] = expiry.split('/')
+    if (!mm || !yyyy || mm.length > 2 || yyyy.length !== 4) {
+      Alert.alert('Invalid date', 'Enter expiry date as MM/YYYY (e.g. 06/2027).')
+      return
+    }
+    const expiryIso = new Date(parseInt(yyyy), parseInt(mm), 0).toISOString().split('T')[0]
+
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      await api.post('/inventory', {
+        name: name.trim(),
+        ...(generic.trim()  && { genericName: generic.trim() }),
+        ...(category        && { category }),
+        ...(batch.trim()    && { batchNumber: batch.trim() }),
+        unit: unit.trim(),
+        quantity: parseInt(qty, 10),
+        costPrice: costPrice ? parseFloat(costPrice) : parseFloat(price),
+        sellingPrice: parseFloat(price),
+        expiryDate: expiryIso,
+        ...(reorder         && { reorderLevel: parseInt(reorder, 10) }),
+        ...(nafdac.trim()   && { nafdacNo: nafdac.trim() }),
+      })
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
       router.back()
-    }, 1200)
+    } catch (err: any) {
+      Alert.alert('Error', err?.response?.data?.message || 'Failed to save drug.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -229,10 +260,18 @@ export default function AddDrugScreen() {
             <Input label="Batch number" value={batch} onChangeText={setBatch} placeholder="e.g. B2024-01" autoCapitalize="characters" />
             <View style={styles.row2}>
               <View style={{ flex: 1 }}>
-                <Input label="Quantity" value={qty} onChangeText={setQty} placeholder="0" keyboardType="number-pad" />
+                <Input label="Quantity *" value={qty} onChangeText={setQty} placeholder="0" keyboardType="number-pad" />
               </View>
               <View style={{ flex: 1 }}>
-                <Input label="Unit price (₦)" value={price} onChangeText={setPrice} placeholder="0.00" keyboardType="decimal-pad" />
+                <Input label="Unit *" value={unit} onChangeText={setUnit} placeholder="Tabs / Caps / mL" autoCapitalize="words" />
+              </View>
+            </View>
+            <View style={styles.row2}>
+              <View style={{ flex: 1 }}>
+                <Input label="Cost price (₦)" value={costPrice} onChangeText={setCostPrice} placeholder="0.00" keyboardType="decimal-pad" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Input label="Selling price (₦) *" value={price} onChangeText={setPrice} placeholder="0.00" keyboardType="decimal-pad" />
               </View>
             </View>
             <View style={styles.row2}>
@@ -240,7 +279,7 @@ export default function AddDrugScreen() {
                 <Input label="Reorder level" value={reorder} onChangeText={setReorder} placeholder="0" keyboardType="number-pad" />
               </View>
               <View style={{ flex: 1 }}>
-                <Input label="Expiry date" value={expiry} onChangeText={setExpiry} placeholder="MM/YYYY" />
+                <Input label="Expiry date *" value={expiry} onChangeText={setExpiry} placeholder="MM/YYYY" />
               </View>
             </View>
           </View>

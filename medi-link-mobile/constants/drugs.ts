@@ -13,6 +13,7 @@ export interface Drug {
   unitPrice: number
   reorderLevel: number
   expiryDays: number   // negative = already expired
+  expiryDate?: string  // ISO date string from API
   manufacturer: string
   nafdacNo: string
   location: string

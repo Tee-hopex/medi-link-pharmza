@@ -267,6 +267,12 @@ export default function MarketplaceScreen() {
             >
               <Ionicons name="receipt-outline" size={22} color={colors.textPrimary} />
             </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.iconBtn, { backgroundColor: colors.textPrimary, borderColor: colors.textPrimary }]}
+              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/listing/create') }}
+            >
+              <Ionicons name="add" size={22} color={colors.sage} />
+            </TouchableOpacity>
           </View>
         </View>
 

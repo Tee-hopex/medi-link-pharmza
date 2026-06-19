@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Search, ShoppingCart, Loader2, X, AlertTriangle } from 'lucide-react'
+import { Plus, Search, ShoppingCart, Loader2, X, AlertTriangle, Package } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { api } from '@/lib/api'
 import { formatCurrency, formatDate, daysUntil, cn } from '@/lib/utils'
@@ -10,23 +10,78 @@ import { useAuthStore } from '@/store/auth.store'
 
 function CreateListingModal({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
-  const { register, handleSubmit, formState: { isSubmitting } } = useForm()
+  const { register, handleSubmit, setValue, formState: { isSubmitting } } = useForm()
+  const [inventoryItemId, setInventoryItemId] = useState('')
+
+  const { data: inventory = [] } = useQuery<any[]>({
+    queryKey: ['inventory-picker'],
+    queryFn: () => api.get('/inventory').then((r) => r.data.data),
+  })
+
   const mutation = useMutation({
     mutationFn: (data: unknown) => api.post('/marketplace', data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['marketplace'] }); onClose() },
   })
+
+  const handleInventorySelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const id = e.target.value
+    setInventoryItemId(id)
+    if (!id) return
+    const item = inventory.find((i) => i.id === id)
+    if (!item) return
+    setValue('drugName', item.name)
+    setValue('genericName', item.genericName ?? '')
+    setValue('category', item.category ?? '')
+    setValue('unit', item.unit)
+    setValue('quantity', item.quantity)
+    setValue('askingPrice', item.sellingPrice)
+    setValue('originalPrice', item.sellingPrice)
+    setValue('expiryDate', new Date(item.expiryDate).toISOString().split('T')[0])
+  }
+
   const inputClass = 'w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500'
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold">Create Listing</h2>
           <button onClick={onClose}><X size={20} className="text-gray-400" /></button>
         </div>
-        <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-3">
+
+        {/* Inventory picker — only shown when inventory has items */}
+        {inventory.length > 0 && (
+          <div className="mb-4">
+            <label className="text-xs font-medium text-gray-600 mb-1 block">Import from inventory</label>
+            <div className="relative">
+              <Package size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-500 pointer-events-none" />
+              <select
+                value={inventoryItemId}
+                onChange={handleInventorySelect}
+                className={cn(inputClass, 'pl-8 bg-primary-50 border-primary-200 text-primary-800')}
+              >
+                <option value="">— Select a drug to pre-fill —</option>
+                {inventory.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name} · {item.quantity} {item.unit}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {inventoryItemId && (
+              <p className="text-xs text-primary-600 mt-1.5">Form pre-filled — adjust as needed</p>
+            )}
+            <div className="border-t border-gray-100 my-4" />
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit((d) => mutation.mutate({ ...d, ...(inventoryItemId && { inventoryItemId }) }))} className="space-y-3">
           <div>
             <label className="text-xs font-medium text-gray-600 mb-1 block">Drug name *</label>
             <input {...register('drugName', { required: true })} placeholder="Amoxicillin 500mg" className={inputClass} />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-600 mb-1 block">Generic name</label>
+            <input {...register('genericName')} placeholder="e.g. Amoxicillin Trihydrate" className={inputClass} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

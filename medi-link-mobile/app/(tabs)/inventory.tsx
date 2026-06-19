@@ -28,6 +28,7 @@ function mapItem(item: any): Drug {
     unitPrice: item.sellingPrice,
     reorderLevel: item.reorderLevel || 0,
     expiryDays: daysDiff(item.expiryDate),
+    expiryDate: item.expiryDate,
     manufacturer: item.manufacturer || '',
     nafdacNo: item.nafdacNo || '',
     location: item.location || '',
@@ -65,7 +66,7 @@ function filterDrugs(drugs: Drug[], filter: Filter, query: string): Drug[] {
 
 // ─── Drug Card ────────────────────────────────────────────────────────────────
 
-function DrugCard({ drug, index, visible }: { drug: Drug; index: number; visible: boolean }) {
+function DrugCard({ drug, index, visible, onList }: { drug: Drug; index: number; visible: boolean; onList: () => void }) {
   const { colors } = useTheme()
   const router = useRouter()
   const tx      = useRef(new Animated.Value(40)).current
@@ -153,7 +154,16 @@ function DrugCard({ drug, index, visible }: { drug: Drug; index: number; visible
             </View>
           </View>
 
-          <Ionicons name="chevron-forward" size={18} color={colors.border} />
+          <View style={styles.rightActions}>
+            <TouchableOpacity
+              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onList() }}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              style={[styles.listBtn, { backgroundColor: `${colors.sage}18`, borderColor: `${colors.sage}40` }]}
+            >
+              <Ionicons name="storefront-outline" size={15} color={colors.sage} />
+            </TouchableOpacity>
+            <Ionicons name="chevron-forward" size={18} color={colors.border} />
+          </View>
         </View>
       </TouchableOpacity>
     </Animated.View>
@@ -334,7 +344,24 @@ export default function InventoryScreen() {
           </View>
         }
         renderItem={({ item, index }) => (
-          <DrugCard drug={item} index={index} visible={visible} />
+          <DrugCard
+            drug={item}
+            index={index}
+            visible={visible}
+            onList={() => router.push({
+              pathname: '/listing/create',
+              params: {
+                inventoryItemId: item.id,
+                name: item.name,
+                genericName: item.genericName,
+                category: item.category,
+                unit: item.unit,
+                quantity: String(item.quantity),
+                sellingPrice: String(item.unitPrice),
+                expiryDate: item.expiryDate ?? '',
+              },
+            })}
+          />
         )}
         ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
       />
@@ -427,6 +454,9 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
   },
   locationText: { fontSize: 12 },
+
+  rightActions: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingRight: 14 },
+  listBtn: { padding: 6, borderRadius: 8, borderWidth: 1 },
 
   empty: { alignItems: 'center', paddingTop: 60, gap: 10 },
   emptyTitle: { fontSize: 18, fontWeight: '600' },

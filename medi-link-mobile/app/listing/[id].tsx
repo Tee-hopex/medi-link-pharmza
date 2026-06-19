@@ -1,28 +1,52 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, Animated, Modal, Linking,
+  TouchableOpacity, Animated, Modal, Linking, ActivityIndicator, Alert,
 } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import * as Haptics from 'expo-haptics'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import MapView, { Marker, Circle } from 'react-native-maps'
 import { useTheme } from '../../constants/theme'
-import {
-  MOCK_LISTINGS, getRemainingSeconds, formatCountdown, listingUrgencyColor,
-} from '../../constants/listings'
+import { type Listing, getRemainingSeconds, formatCountdown, listingUrgencyColor } from '../../constants/listings'
+import { api } from '../../lib/api'
+
+function mapListing(item: any): Listing {
+  const expiryMs = new Date(item.expiryDate).getTime()
+  return {
+    id: item.id,
+    drugName: item.drugName,
+    genericName: item.genericName || '',
+    category: item.category || '',
+    quantity: item.quantity,
+    unit: item.unit,
+    unitPrice: item.askingPrice,
+    expiryDays: Math.ceil((expiryMs - Date.now()) / 86_400_000),
+    listingEndMs: expiryMs,
+    pharmacyName: item.seller?.facility?.name || `${item.seller?.firstName ?? ''} ${item.seller?.lastName ?? ''}`.trim(),
+    pharmacyId: item.seller?.id || '',
+    verified: item.seller?.facility?.verified ?? false,
+    verificationLevel: 1 as 1,
+    distance: 0,
+    nafdacNo: '',
+    batch: '',
+    latitude: 0,
+    longitude: 0,
+    address: item.seller?.facility?.address || item.seller?.facility?.city || '',
+  }
+}
 
 // ─── Escrow Modal ─────────────────────────────────────────────────────────────
 
-function EscrowModal({ visible, totalPrice, drugName, sellerName, onConfirm, onDismiss }: {
+function EscrowModal({ visible, totalPrice, drugName, sellerName, onConfirm, onDismiss, loading = false }: {
   visible: boolean
   totalPrice: number
   drugName: string
   sellerName: string
   onConfirm: () => void
   onDismiss: () => void
+  loading?: boolean
 }) {
   const { colors } = useTheme()
   const scaleAnim = useRef(new Animated.Value(0.88)).current
@@ -75,11 +99,17 @@ function EscrowModal({ visible, totalPrice, drugName, sellerName, onConfirm, onD
           </View>
 
           <TouchableOpacity
-            style={[modal.confirmBtn, { backgroundColor: colors.textPrimary }]}
-            onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); onConfirm() }}
+            style={[modal.confirmBtn, { backgroundColor: colors.textPrimary, opacity: loading ? 0.7 : 1 }]}
+            onPress={() => { if (!loading) onConfirm() }}
+            disabled={loading}
           >
-            <Ionicons name="checkmark-circle-outline" size={20} color={colors.sage} />
-            <Text style={[modal.confirmText, { color: colors.sage }]}>Confirm & Pay ₦{totalPrice.toLocaleString()}</Text>
+            {loading
+              ? <ActivityIndicator color={colors.sage} />
+              : <>
+                  <Ionicons name="checkmark-circle-outline" size={20} color={colors.sage} />
+                  <Text style={[modal.confirmText, { color: colors.sage }]}>Confirm & Pay ₦{totalPrice.toLocaleString()}</Text>
+                </>
+            }
           </TouchableOpacity>
           <TouchableOpacity style={modal.cancelBtn} onPress={onDismiss}>
             <Text style={[modal.cancelText, { color: colors.textMuted }]}>Cancel</Text>
@@ -167,31 +197,64 @@ export default function ListingDetailScreen() {
   const router  = useRouter()
   const insets  = useSafeAreaInsets()
 
-  const listing = MOCK_LISTINGS.find(l => l.id === id) ?? MOCK_LISTINGS[0]
-  const [remaining, setRemaining] = useState(getRemainingSeconds(listing.listingEndMs))
+  const [listing, setListing]         = useState<Listing | null>(null)
+  const [loadingPage, setLoadingPage] = useState(true)
+  const [remaining, setRemaining]     = useState(0)
   const [escrowVisible, setEscrowVisible] = useState(false)
   const [purchased, setPurchased]         = useState(false)
-
-  const urgColor   = listingUrgencyColor(remaining, colors)
-  const isUrgent   = remaining < 172_800
-  const totalPrice = listing.quantity * listing.unitPrice
+  const [ordering, setOrdering]           = useState(false)
 
   const contentY  = useRef(new Animated.Value(28)).current
   const contentOp = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.spring(contentY,  { toValue: 0, tension: 55, friction: 14, useNativeDriver: true }),
-      Animated.timing(contentOp, { toValue: 1, duration: 300, useNativeDriver: true }),
-    ]).start()
-    const id = setInterval(() => setRemaining(getRemainingSeconds(listing.listingEndMs)), 1000)
-    return () => clearInterval(id)
-  }, [])
+    api.get(`/marketplace/${id}`)
+      .then((r) => {
+        const mapped = mapListing(r.data.data)
+        setListing(mapped)
+        setRemaining(getRemainingSeconds(mapped.listingEndMs))
+        Animated.parallel([
+          Animated.spring(contentY,  { toValue: 0, tension: 55, friction: 14, useNativeDriver: true }),
+          Animated.timing(contentOp, { toValue: 1, duration: 300, useNativeDriver: true }),
+        ]).start()
+      })
+      .catch(() => router.back())
+      .finally(() => setLoadingPage(false))
+  }, [id])
 
-  const handleConfirm = () => {
-    setEscrowVisible(false)
-    setPurchased(true)
+  useEffect(() => {
+    if (!listing) return
+    const timer = setInterval(() => setRemaining(getRemainingSeconds(listing.listingEndMs)), 1000)
+    return () => clearInterval(timer)
+  }, [listing])
+
+  const handleConfirm = async () => {
+    if (!listing) return
+    setOrdering(true)
+    try {
+      await api.post('/orders', { listingId: listing.id, quantity: listing.quantity })
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      setEscrowVisible(false)
+      setPurchased(true)
+    } catch (err: any) {
+      setEscrowVisible(false)
+      Alert.alert('Order failed', err?.response?.data?.message || 'Could not place order. Try again.')
+    } finally {
+      setOrdering(false)
+    }
   }
+
+  if (loadingPage || !listing) {
+    return (
+      <View style={[styles.screen, { backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.sage} />
+      </View>
+    )
+  }
+
+  const urgColor   = listingUrgencyColor(remaining, colors)
+  const isUrgent   = remaining < 172_800
+  const totalPrice = listing.quantity * listing.unitPrice
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
@@ -268,43 +331,17 @@ export default function ListingDetailScreen() {
               <Ionicons name="call-outline" size={18} color={colors.textPrimary} />
             </TouchableOpacity>
           </View>
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
-          <View style={styles.distanceRow}>
-            <Ionicons name="navigate-circle-outline" size={16} color={colors.teal} />
-            <Text style={[styles.distanceText, { color: colors.textSecondary }]}>
-              {listing.distance} km from your pharmacy
-            </Text>
-          </View>
-        </View>
-
-        {/* Map */}
-        <View style={[styles.mapCard, { borderColor: colors.border }]}>
-          <MapView
-            style={styles.map}
-            initialRegion={{
-              latitude:  listing.latitude,
-              longitude: listing.longitude,
-              latitudeDelta:  0.012,
-              longitudeDelta: 0.012,
-            }}
-            scrollEnabled={false}
-            zoomEnabled={false}
-            pitchEnabled={false}
-            rotateEnabled={false}
-          >
-            <Marker coordinate={{ latitude: listing.latitude, longitude: listing.longitude }}>
-              <View style={[styles.mapPin, { backgroundColor: colors.sage }]}>
-                <Ionicons name="storefront" size={16} color="#fff" />
+          {listing.address ? (
+            <>
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
+              <View style={styles.distanceRow}>
+                <Ionicons name="location-outline" size={16} color={colors.textMuted} />
+                <Text style={[styles.distanceText, { color: colors.textSecondary }]}>
+                  {listing.address}
+                </Text>
               </View>
-            </Marker>
-            <Circle
-              center={{ latitude: listing.latitude, longitude: listing.longitude }}
-              radius={300}
-              fillColor={`${colors.sage}18`}
-              strokeColor={`${colors.sage}50`}
-              strokeWidth={1}
-            />
-          </MapView>
+            </>
+          ) : null}
         </View>
 
         {/* Drug details */}
@@ -359,7 +396,8 @@ export default function ListingDetailScreen() {
         drugName={listing.drugName}
         sellerName={listing.pharmacyName}
         onConfirm={handleConfirm}
-        onDismiss={() => setEscrowVisible(false)}
+        onDismiss={() => { if (!ordering) setEscrowVisible(false) }}
+        loading={ordering}
       />
     </View>
   )

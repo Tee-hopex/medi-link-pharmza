@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, ActivityIndicator,
 } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
@@ -8,9 +8,27 @@ import { LinearGradient } from 'expo-linear-gradient'
 import * as Haptics from 'expo-haptics'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTheme } from '../../constants/theme'
-import {
-  MOCK_DRUGS, expiryStatus, expiryColor, expiryLabel,
-} from '../../constants/drugs'
+import { type Drug, expiryStatus, expiryColor, expiryLabel } from '../../constants/drugs'
+import { api } from '../../lib/api'
+
+function mapItem(item: any): Drug {
+  return {
+    id: item.id,
+    name: item.name,
+    genericName: item.genericName || '',
+    category: item.category || '',
+    batch: item.batchNumber || '',
+    quantity: item.quantity,
+    unit: item.unit,
+    unitPrice: item.sellingPrice,
+    reorderLevel: item.reorderLevel || 0,
+    expiryDays: Math.ceil((new Date(item.expiryDate).getTime() - Date.now()) / 86_400_000),
+    expiryDate: item.expiryDate,
+    manufacturer: item.manufacturer || '',
+    nafdacNo: item.nafdacNo || '',
+    location: item.location || '',
+  }
+}
 
 // ─── Expiry Ring (two-halves technique) ───────────────────────────────────────
 
@@ -161,20 +179,35 @@ export default function DrugDetailScreen() {
   const router  = useRouter()
   const insets  = useSafeAreaInsets()
 
-  const drug = MOCK_DRUGS.find(d => d.id === id) ?? MOCK_DRUGS[0]
-  const status = expiryStatus(drug.expiryDays)
-  const color  = expiryColor(status, colors)
+  const [drug, setDrug]       = useState<Drug | null>(null)
+  const [loading, setLoading] = useState(true)
 
   const contentY  = useRef(new Animated.Value(30)).current
   const contentOp = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.spring(contentY,  { toValue: 0, tension: 55, friction: 14, useNativeDriver: true }),
-      Animated.timing(contentOp, { toValue: 1, duration: 300, useNativeDriver: true }),
-    ]).start()
-  }, [])
+    api.get(`/inventory/${id}`)
+      .then((r) => {
+        setDrug(mapItem(r.data.data))
+        Animated.parallel([
+          Animated.spring(contentY,  { toValue: 0, tension: 55, friction: 14, useNativeDriver: true }),
+          Animated.timing(contentOp, { toValue: 1, duration: 300, useNativeDriver: true }),
+        ]).start()
+      })
+      .catch(() => router.back())
+      .finally(() => setLoading(false))
+  }, [id])
 
+  if (loading || !drug) {
+    return (
+      <View style={[styles.screen, { backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.sage} />
+      </View>
+    )
+  }
+
+  const status = expiryStatus(drug.expiryDays)
+  const color  = expiryColor(status, colors)
   const totalValue = drug.quantity * drug.unitPrice
 
   return (
@@ -230,8 +263,24 @@ export default function DrugDetailScreen() {
           {/* Action buttons */}
           <View style={styles.actions}>
             <ActionBtn icon="add-circle-outline"    label="Restock"   onPress={() => {}} accent />
-            <ActionBtn icon="swap-horizontal-outline" label="Redistribute" onPress={() => {}} />
-            <ActionBtn icon="storefront-outline"   label="List"      onPress={() => {}} />
+            <ActionBtn icon="swap-horizontal-outline" label="Transfer" onPress={() => {}} />
+            <ActionBtn
+              icon="storefront-outline"
+              label="List"
+              onPress={() => router.push({
+                pathname: '/listing/create',
+                params: {
+                  inventoryItemId: drug.id,
+                  name: drug.name,
+                  genericName: drug.genericName,
+                  category: drug.category,
+                  unit: drug.unit,
+                  quantity: String(drug.quantity),
+                  sellingPrice: String(drug.unitPrice),
+                  expiryDate: drug.expiryDate ?? '',
+                },
+              })}
+            />
           </View>
 
           {/* Drug details */}

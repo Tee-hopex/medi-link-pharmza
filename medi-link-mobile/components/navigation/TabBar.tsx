@@ -10,34 +10,32 @@ import { useTheme } from '../../constants/theme'
 const { width: SW } = Dimensions.get('window')
 const H_MARGIN = 20
 const BAR_W    = SW - H_MARGIN * 2
-const SLOT_W   = BAR_W / 5
-const CENTER   = 2   // dashboard is index 2
 
 type IconName = React.ComponentProps<typeof Ionicons>['name']
 
-// Order must match explicit Tabs.Screen declaration in (tabs)/_layout.tsx:
-// 0=inventory  1=marketplace  2=dashboard(HOME)  3=network  4=profile
-const TABS: { icon: IconName; activeIcon: IconName; label: string }[] = [
-  { icon: 'cube-outline',       activeIcon: 'cube',       label: 'Stock'   },
-  { icon: 'storefront-outline', activeIcon: 'storefront', label: 'Market'  },
-  { icon: 'home-outline',       activeIcon: 'home',       label: 'Home'    },
-  { icon: 'people-outline',     activeIcon: 'people',     label: 'Network' },
-  { icon: 'person-outline',     activeIcon: 'person',     label: 'Profile' },
-]
+const TAB_CONFIG: Record<string, { icon: IconName; activeIcon: IconName; label: string }> = {
+  inventory:   { icon: 'cube-outline',       activeIcon: 'cube',       label: 'Stock'   },
+  marketplace: { icon: 'storefront-outline', activeIcon: 'storefront', label: 'Market'  },
+  dashboard:   { icon: 'home-outline',       activeIcon: 'home',       label: 'Home'    },
+  network:     { icon: 'people-outline',     activeIcon: 'people',     label: 'Network' },
+  profile:     { icon: 'person-outline',     activeIcon: 'person',     label: 'Profile' },
+}
 
 export function TabBar({ state, navigation }: BottomTabBarProps) {
   const { colors, isDark } = useTheme()
   const insets = useSafeAreaInsets()
-  const indicatorX = useRef(new Animated.Value(state.index * SLOT_W)).current
+  const slotW  = BAR_W / state.routes.length
+  const centerIdx = state.routes.findIndex((r) => r.name === 'dashboard')
+  const indicatorX = useRef(new Animated.Value(state.index * slotW)).current
 
   useEffect(() => {
     Animated.spring(indicatorX, {
-      toValue: state.index * SLOT_W,
+      toValue: state.index * slotW,
       tension: 240,
       friction: 22,
       useNativeDriver: true,
     }).start()
-  }, [state.index])
+  }, [state.index, slotW])
 
   const barBg = isDark ? 'rgba(13,13,13,0.92)' : 'rgba(255,255,255,0.92)'
 
@@ -58,15 +56,15 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
         />
 
         {/* Sliding sage pill indicator */}
-        <Animated.View style={[styles.indicatorOuter, { transform: [{ translateX: indicatorX }] }]}>
+        <Animated.View style={[styles.indicatorOuter, { width: slotW, transform: [{ translateX: indicatorX }] }]}>
           <View style={[styles.indicator, { backgroundColor: colors.sage }]} />
         </Animated.View>
 
         {/* Tabs */}
         {state.routes.map((route, index) => {
-          const tab    = TABS[index]
+          const tab    = TAB_CONFIG[route.name] ?? TAB_CONFIG.profile
           const active = state.index === index
-          const isHome = index === CENTER
+          const isHome = index === centerIdx
 
           return (
             <TouchableOpacity
@@ -141,7 +139,6 @@ const styles = StyleSheet.create({
   },
   indicatorOuter: {
     position: 'absolute',
-    width: SLOT_W,
     height: 74,
     paddingHorizontal: 7,
     paddingVertical: 12,
