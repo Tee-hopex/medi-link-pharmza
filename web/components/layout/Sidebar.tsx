@@ -3,7 +3,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Package, ShoppingBag, ShoppingCart, Users, Wallet,
-  Briefcase, BarChart3, Settings, MessageSquare, Zap, LogOut, X, MapPin, ShieldCheck,
+  Briefcase, BarChart3, Settings, MessageSquare, Zap, LogOut, X, MapPin,
+  ShieldCheck, AlertTriangle, Send,
 } from 'lucide-react'
 import { useAuthStore } from '@/store/auth.store'
 import { cn } from '@/lib/utils'
@@ -77,8 +78,12 @@ const NAV_GROUPS = [
     label: 'Administration',
     roles: ['ADMIN'] as Role[],
     items: [
-      { href: '/admin', icon: ShieldCheck, label: 'Verifications' },
-      { href: '/admin/users', icon: Users, label: 'All Users' },
+      { href: '/admin',               icon: LayoutDashboard, label: 'Overview' },
+      { href: '/admin/verifications', icon: ShieldCheck,     label: 'Verifications' },
+      { href: '/admin/users',         icon: Users,           label: 'Users' },
+      { href: '/admin/listings',      icon: ShoppingBag,     label: 'Listings' },
+      { href: '/admin/disputes',      icon: AlertTriangle,   label: 'Disputes' },
+      { href: '/admin/broadcast',     icon: Send,            label: 'Broadcast' },
     ],
   },
 ]

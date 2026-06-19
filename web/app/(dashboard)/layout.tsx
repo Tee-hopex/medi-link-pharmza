@@ -17,8 +17,12 @@ const TITLES: Record<string, string> = {
   '/analytics': 'Analytics',
   '/pharmacies': 'Find a Pharmacy',
   '/settings': 'Settings',
-  '/admin': 'Admin — Verifications',
-  '/admin/users': 'Admin — All Users',
+  '/admin/verifications': 'Admin — Verifications',
+  '/admin/users':         'Admin — Users',
+  '/admin/listings':      'Admin — Listings',
+  '/admin/disputes':      'Admin — Disputes',
+  '/admin/broadcast':     'Admin — Broadcast',
+  '/admin':               'Admin Overview',
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
