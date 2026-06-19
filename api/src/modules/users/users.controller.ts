@@ -30,6 +30,18 @@ export async function updatePassword(req: AuthRequest, res: Response, next: Next
   }
 }
 
+export async function submitVerification(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const user = await usersService.submitVerification(req.user!.id, req.body)
+    res.json(ok(user, 'Verification submitted. Your account is now under review.'))
+  } catch (err) {
+    if (err instanceof Error) {
+      res.status(400).json({ success: false, error: err.message }); return
+    }
+    next(err)
+  }
+}
+
 export async function updateFacility(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const facility = await usersService.updateFacility(req.user!.id, req.body)

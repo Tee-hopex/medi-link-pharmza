@@ -39,6 +39,34 @@ export async function updatePassword(userId: string, currentPassword: string, ne
   await prisma.user.update({ where: { id: userId }, data: { passwordHash } })
 }
 
+export async function submitVerification(userId: string, data: {
+  licenseNumber?: string
+  licenseDoc?: string
+}) {
+  const user = await prisma.user.findUnique({ where: { id: userId } })
+  if (!user) throw new Error('User not found')
+  if (user.verificationLevel === 'PENDING') throw new Error('Verification already submitted and under review')
+  if (user.verificationLevel !== 'UNVERIFIED') throw new Error('Account is already verified')
+
+  if (data.licenseNumber || data.licenseDoc) {
+    await prisma.facility.updateMany({
+      where: { userId },
+      data: {
+        ...(data.licenseNumber && { licenseNumber: data.licenseNumber }),
+        ...(data.licenseDoc && { licenseDoc: data.licenseDoc }),
+      },
+    })
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { verificationLevel: 'PENDING' },
+  })
+
+  const { passwordHash: _, ...safe } = updated
+  return safe
+}
+
 export async function updateFacility(userId: string, data: {
   name?: string
   address?: string

@@ -9,5 +9,6 @@ router.get('/me', controller.getMe)
 router.patch('/me', controller.updateMe)
 router.patch('/me/password', controller.updatePassword)
 router.patch('/me/facility', controller.updateFacility)
+router.post('/me/verification/submit', controller.submitVerification)
 
 export default router

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, Animated,
+  TouchableOpacity, Animated, Alert, ActivityIndicator,
 } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
@@ -10,8 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTheme } from '../../constants/theme'
 import { useAuthStore } from '../../store/auth.store'
-import { MOCK_DRUGS } from '../../constants/drugs'
-import { MOCK_ORDERS } from '../../constants/orders'
+import { api } from '../../lib/api'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -248,6 +247,7 @@ export default function ProfileScreen() {
   const { user, logout } = useAuthStore()
 
   const [statsReady, setStatsReady] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
   const headerY  = useRef(new Animated.Value(-16)).current
   const headerOp = useRef(new Animated.Value(0)).current
@@ -268,14 +268,31 @@ export default function ProfileScreen() {
   const lastName   = user?.lastName  ?? 'User'
   const initials   = `${firstName[0] ?? ''}${lastName[0] ?? ''}`.toUpperCase()
   const profession = user?.profession ?? 'Pharmacist'
-  const premiseName = user?.premiseName ?? 'My Pharmacy'
-  const verLevel   = user?.verificationLevel ?? 'LEVEL_2'
+  const premiseName = user?.facility?.name ?? 'My Pharmacy'
+  const verLevel   = user?.verificationLevel ?? 'UNVERIFIED'
   const tierNum    = getVerificationLevel(verLevel)
   const verLabel   = getVerificationLabel(verLevel)
 
-  const drugsTracked       = MOCK_DRUGS.length + 132
-  const tradesCompleted    = MOCK_ORDERS.filter(o => o.status === 'COMPLETED').length
-  const patientsServed     = 0
+  const patientsServed = 0
+
+  const handleSubmitVerification = async () => {
+    if (verLevel === 'PENDING') {
+      Alert.alert('Under Review', 'Your verification is already submitted and under review. We\'ll notify you once it\'s processed.')
+      return
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+    setSubmitting(true)
+    try {
+      await api.post('/users/me/verification/submit', {})
+      const { refreshUser } = useAuthStore.getState()
+      await refreshUser()
+      Alert.alert('Submitted!', 'Your verification request has been submitted. Our team will review it shortly.')
+    } catch (err: any) {
+      Alert.alert('Error', err?.response?.data?.error || 'Failed to submit verification. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   const handleLogout = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
@@ -337,8 +354,8 @@ export default function ProfileScreen() {
 
         {/* Stats row */}
         <View style={styles.statsRow}>
-          <StatCard value={drugsTracked}   label="Drugs Tracked"    accent   enabled={statsReady} colors={colors} />
-          <StatCard value={tradesCompleted} label="Trades Done"               enabled={statsReady} colors={colors} />
+          <StatCard value={0}              label="Drugs Tracked"    accent   enabled={statsReady} colors={colors} />
+          <StatCard value={0}              label="Trades Done"               enabled={statsReady} colors={colors} />
           <StatCard value={patientsServed}  label="Patients Served" dim      enabled={statsReady} colors={colors} />
         </View>
 
@@ -402,13 +419,21 @@ export default function ProfileScreen() {
               })}
             </View>
             <TouchableOpacity
-              style={[styles.upgradeBtn, { backgroundColor: colors.textPrimary }]}
-              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+              style={[styles.upgradeBtn, { backgroundColor: colors.textPrimary, opacity: submitting ? 0.7 : 1 }]}
+              onPress={handleSubmitVerification}
+              disabled={submitting || verLevel === 'PENDING'}
             >
-              <Ionicons name="shield-checkmark-outline" size={17} color={colors.sage} />
-              <Text style={[styles.upgradeText, { color: colors.sage }]}>
-                Upgrade to Level {tierNum + 1}
-              </Text>
+              {submitting
+                ? <ActivityIndicator size="small" color={colors.sage} />
+                : (
+                  <>
+                    <Ionicons name="shield-checkmark-outline" size={17} color={colors.sage} />
+                    <Text style={[styles.upgradeText, { color: colors.sage }]}>
+                      {verLevel === 'PENDING' ? 'Pending Review' : `Submit for Verification`}
+                    </Text>
+                  </>
+                )
+              }
             </TouchableOpacity>
           </View>
         )}

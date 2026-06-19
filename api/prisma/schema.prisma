@@ -14,6 +14,7 @@ enum UserRole {
   MEDICAL
   NON_MEDICAL
   PATIENT
+  ADMIN
 }
 
 enum VerificationLevel {

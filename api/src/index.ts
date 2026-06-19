@@ -24,6 +24,7 @@ import patientsRouter from './modules/patients/patients.router'
 import walletRouter from './modules/wallet/wallet.router'
 import jobsRouter from './modules/jobs/jobs.router'
 import notificationsRouter from './modules/notifications/notifications.router'
+import adminRouter from './modules/admin/admin.router'
 
 const app = express()
 const httpServer = http.createServer(app)
@@ -62,6 +63,7 @@ app.use(`${v1}/patients`, patientsRouter)
 app.use(`${v1}/wallet`, walletRouter)
 app.use(`${v1}/jobs`, jobsRouter)
 app.use(`${v1}/notifications`, notificationsRouter)
+app.use(`${v1}/admin`, adminRouter)
 
 // Error handling
 app.use(notFound)

@@ -3,12 +3,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Package, ShoppingBag, ShoppingCart, Users, Wallet,
-  Briefcase, BarChart3, Settings, MessageSquare, Zap, LogOut, X, MapPin,
+  Briefcase, BarChart3, Settings, MessageSquare, Zap, LogOut, X, MapPin, ShieldCheck,
 } from 'lucide-react'
 import { useAuthStore } from '@/store/auth.store'
 import { cn } from '@/lib/utils'
 
-type Role = 'MEDICAL' | 'NON_MEDICAL' | 'PATIENT'
+type Role = 'MEDICAL' | 'NON_MEDICAL' | 'PATIENT' | 'ADMIN'
 
 const NAV_GROUPS = [
   {
@@ -71,6 +71,14 @@ const NAV_GROUPS = [
     roles: ['MEDICAL', 'NON_MEDICAL', 'PATIENT'] as Role[],
     items: [
       { href: '/settings', icon: Settings, label: 'Settings' },
+    ],
+  },
+  {
+    label: 'Administration',
+    roles: ['ADMIN'] as Role[],
+    items: [
+      { href: '/admin', icon: ShieldCheck, label: 'Verifications' },
+      { href: '/admin/users', icon: Users, label: 'All Users' },
     ],
   },
 ]

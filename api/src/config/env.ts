@@ -25,4 +25,6 @@ export const env = {
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || '',
 
   PHONE_OTP_ENABLED: process.env.PHONE_OTP_ENABLED === 'true',
+
+  ADMIN_SECRET: process.env.ADMIN_SECRET || 'change-me-in-production',
 } as const
