@@ -63,10 +63,17 @@ function TierRings({ level, colors }: { level: 0 | 1 | 2 | 3; colors: any }) {
     { offset: 34, thickness: 2,   delay: 700 },
   ]
 
-  const anims = rings.map(() => ({
-    scale: useRef(new Animated.Value(0.6)).current,
-    opacity: useRef(new Animated.Value(0)).current,
-  }))
+  const s0 = useRef(new Animated.Value(0.6)).current
+  const s1 = useRef(new Animated.Value(0.6)).current
+  const s2 = useRef(new Animated.Value(0.6)).current
+  const o0 = useRef(new Animated.Value(0)).current
+  const o1 = useRef(new Animated.Value(0)).current
+  const o2 = useRef(new Animated.Value(0)).current
+  const anims = [
+    { scale: s0, opacity: o0 },
+    { scale: s1, opacity: o1 },
+    { scale: s2, opacity: o2 },
+  ]
 
   useEffect(() => {
     rings.forEach((r, i) => {
@@ -82,7 +89,6 @@ function TierRings({ level, colors }: { level: 0 | 1 | 2 | 3; colors: any }) {
   }, [level])
 
   const size = AV + rings[rings.length - 1].offset * 2
-  const center = size / 2
 
   return (
     <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
@@ -380,7 +386,7 @@ export default function ProfileScreen() {
             { label: 'Profession',    value: profession },
             { label: 'Email',         value: user?.email ?? 'demo@medilink.com' },
             { label: 'Phone',         value: user?.phone || '+234 — not set' },
-          ].map((item, i, arr) => (
+          ].map((item, i) => (
             <View key={item.label}>
               <View style={[styles.infoRow, i > 0 && { borderTopWidth: 1, borderTopColor: colors.border }]}>
                 <Text style={[styles.infoLabel, { color: colors.textMuted }]}>{item.label}</Text>
